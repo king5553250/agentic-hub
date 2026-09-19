@@ -1,0 +1,36 @@
+name: Email Agent
+description: AI agent for Gmail automation tasks
+version: 1.0.0
+
+trigger:
+  type: webhook
+  path: email-agent
+
+actions:
+  - name: send_email
+    description: Send an email via Gmail
+    params:
+      - name: to
+        type: string
+        required: true
+      - name: subject
+        type: string
+        required: true
+      - name: body
+        type: string
+        required: true
+
+  - name: search_emails
+    description: Search Gmail inbox
+    params:
+      - name: query
+        type: string
+        required: true
+
+  - name: list_inbox
+    description: List recent emails
+    params: []
+
+route:
+  target: composio_gmail
+  account: mahdilouz02@gmail.com
