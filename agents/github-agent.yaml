@@ -1,0 +1,39 @@
+name: GitHub Agent
+description: AI agent for GitHub automation tasks
+version: 1.0.0
+
+trigger:
+  type: webhook
+  path: github-agent
+
+actions:
+  - name: list_repos
+    description: List all repositories
+    method: GET
+    
+  - name: create_issue
+    description: Create a new GitHub issue
+    params:
+      - name: repo
+        type: string
+        required: true
+      - name: title
+        type: string
+        required: true
+      - name: body
+        type: string
+        required: false
+
+  - name: get_file
+    description: Get file contents from repository
+    params:
+      - name: repo
+        type: string
+        required: true
+      - name: path
+        type: string
+        required: true
+
+route:
+  target: albato_bridge
+  endpoint: https://h.albato.com/wh/38/1lf3rnr/O9whZJUQfZcWAqkAiodlBeMR9qkbL21l1yZSAYPqr78/
