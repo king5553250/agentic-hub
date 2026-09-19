@@ -1,0 +1,39 @@
+name: YouTube Agent
+description: AI agent for YouTube content management
+version: 1.0.0
+
+trigger:
+  type: webhook
+  path: youtube-agent
+
+actions:
+  - name: upload_video
+    description: Upload a video to YouTube
+    params:
+      - name: title
+        type: string
+        required: true
+      - name: description
+        type: string
+        required: false
+      - name: file
+        type: string
+        required: true
+
+  - name: get_videos
+    description: Get all published videos
+    params: []
+
+  - name: create_playlist
+    description: Create a new playlist
+    params:
+      - name: title
+        type: string
+        required: true
+      - name: description
+        type: string
+        required: false
+
+route:
+  target: composio_youtube
+  account: mahdilouz02@gmail.com
