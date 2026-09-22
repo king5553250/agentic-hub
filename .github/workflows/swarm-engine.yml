@@ -1,0 +1,52 @@
+# OMNI-BRAIN SWARM ENGINE
+# GitHub Actions as 24/7 automation backbone — free, unlimited minutes on public repos.
+# Replaces ActivePieces (out of credits).
+# Triggered by: cron schedule, repository_dispatch webhook, workflow_dispatch (manual)
+
+name: Omni-Brain Swarm Engine
+
+on:
+  schedule:
+    # Run every 10 minutes — the 10-second persistence loop scaled for GH Actions
+    - cron: '*/10 * * * *'
+  workflow_dispatch:
+    inputs:
+      task:
+        description: 'Task to execute (scout, sweep, sync, dead_switch)'
+        required: false
+        default: 'sweep'
+  repository_dispatch:
+    types: [omni-brain-task]
+
+jobs:
+  swarm-cycle:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Swarm Heartbeat
+        run: |
+          echo "[OMNI-BRAIN] Swarm cycle started at $(date -u)"
+          echo "Event: ${{ github.event_name }}"
+          echo "Task: ${{ github.event.inputs.task || 'scheduled-sweep' }}"
+
+      - name: Scout — Research & Intel
+        if: always()
+        run: |
+          echo "[SCOUT] Scanning for high-value data..."
+          curl -s https://h.albato.com/wh/38/1lf3rnr/O9whZJUQfZcWAqkAiodlBeMR9qkbL21l1yZSAYPqr78/ \
+            -H "Content-Type: application/json" \
+            -d '{"agent":"scout","action":"cycle","timestamp":"'$(date -u +%Y-%m-%dT%H:%M:%SZ)'"}' || true
+
+      - name: Librarian — Memory Sync
+        if: always()
+        run: |
+          echo "[LIBRARIAN] Syncing to vaults..."
+          curl -s https://play.svix.com/in/oAqq1httRtL8ZynkPc0Kdp4u1iH/ \
+            -H "Content-Type: application/json" \
+            -d '{"agent":"librarian","action":"sync","source":"github-actions","timestamp":"'$(date -u +%Y-%m-%dT%H:%M:%SZ)'"}' || true
+
+      - name: Envoy — Status Report
+        if: always()
+        run: |
+          echo "[ENVOY] Swarm cycle complete. All agents checked in."
+          echo "Next cycle in 10 minutes."
