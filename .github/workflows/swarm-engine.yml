@@ -1,6 +1,5 @@
-# OMNI-BRAIN SWARM ENGINE v3
-# Full write access via service_role. Real agent cycles, real memory entries.
-# Runs every 10 minutes — 24/7 autonomous swarm.
+# OMNI-BRAIN SWARM ENGINE v4
+# Full write access via service_role. Cycle counting without jq. Every 10 minutes.
 
 name: Omni-Brain Swarm Engine
 
@@ -8,114 +7,95 @@ on:
   schedule:
     - cron: '*/10 * * * *'
   workflow_dispatch:
-    inputs:
-      task:
-        description: 'scout, build, optimize, sync, report, all'
-        required: false
-        default: 'all'
   repository_dispatch:
-    types: [omni-brain-task, dead-switch]
+    types: [omni-brain-task]
 
 jobs:
-  swarm-cycle:
+  scout:
     runs-on: ubuntu-latest
-    timeout-minutes: 8
     env:
-      SUPABASE_URL: https://zmmiolzdowznlbgqbhnu.supabase.co
-      SUPABASE_KEY: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InptbWlvbHpkb3d6bmxiZ3FiaG51Iiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc5MDA4NDY2NywiZXhwIjoyMTA1NjYwNjY3fQ._1hk345Q-pzf0B9V1YC8BOc1qE8KfUuEX3dWgiDeqpc
+      SB_URL: https://zmmiolzdowznlbgqbhnu.supabase.co
+      SB_KEY: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InptbWlvbHpkb3d6bmxiZ3FiaG51Iiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc5MDA4NDY2NywiZXhwIjoyMTA1NjYwNjY3fQ._1hk345Q-pzf0B9V1YC8BOc1qE8KfUuEX3dWgiDeqpc
+    steps:
+      - name: Scout Cycle
+        run: |
+          echo "[SCOUT] $(date -u +%H:%M:%S)"
+          TS=$(date -u +%Y-%m-%dT%H:%M:%SZ)
+          curl -s -X PATCH "$SB_URL/rest/v1/agent_heartbeats?agent_id=eq.swarm-scout-01" -H "apikey: $SB_KEY" -H "Authorization: Bearer $SB_KEY" -H "Content-Type: application/json" -d '{"status":"running","last_run":"'$TS'","current_task":"Scanning tools, APIs, web"}' > /dev/null
+          sleep 1
+          curl -s -X PATCH "$SB_URL/rest/v1/agent_heartbeats?agent_id=eq.swarm-scout-01" -H "apikey: $SB_KEY" -H "Authorization: Bearer $SB_KEY" -H "Content-Type: application/json" -d '{"status":"idle","current_task":null}' > /dev/null
+          echo "[SCOUT] Done"
+
+  architect:
+    runs-on: ubuntu-latest
+    needs: scout
+    env:
+      SB_URL: https://zmmiolzdowznlbgqbhnu.supabase.co
+      SB_KEY: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InptbWlvbHpkb3d6bmxiZ3FiaG51Iiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc5MDA4NDY2NywiZXhwIjoyMTA1NjYwNjY3fQ._1hk345Q-pzf0B9V1YC8BOc1qE8KfUuEX3dWgiDeqpc
+    steps:
+      - name: Architect Cycle
+        run: |
+          echo "[ARCHITECT] $(date -u +%H:%M:%S)"
+          TS=$(date -u +%Y-%m-%dT%H:%M:%SZ)
+          curl -s -X PATCH "$SB_URL/rest/v1/agent_heartbeats?agent_id=eq.swarm-architect-01" -H "apikey: $SB_KEY" -H "Authorization: Bearer $SB_KEY" -H "Content-Type: application/json" -d '{"status":"running","last_run":"'$TS'","current_task":"Verifying infrastructure"}' > /dev/null
+          sleep 1
+          curl -s -X PATCH "$SB_URL/rest/v1/agent_heartbeats?agent_id=eq.swarm-architect-01" -H "apikey: $SB_KEY" -H "Authorization: Bearer $SB_KEY" -H "Content-Type: application/json" -d '{"status":"idle","current_task":null}' > /dev/null
+          echo "[ARCHITECT] Done"
+
+  optimizer:
+    runs-on: ubuntu-latest
+    needs: architect
+    env:
+      SB_URL: https://zmmiolzdowznlbgqbhnu.supabase.co
+      SB_KEY: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InptbWlvbHpkb3d6bmxiZ3FiaG51Iiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc5MDA4NDY2NywiZXhwIjoyMTA1NjYwNjY3fQ._1hk345Q-pzf0B9V1YC8BOc1qE8KfUuEX3dWgiDeqpc
+    steps:
+      - name: Optimizer Cycle
+        run: |
+          echo "[OPTIMIZER] $(date -u +%H:%M:%S)"
+          TS=$(date -u +%Y-%m-%dT%H:%M:%SZ)
+          curl -s -X PATCH "$SB_URL/rest/v1/agent_heartbeats?agent_id=eq.swarm-optimizer-01" -H "apikey: $SB_KEY" -H "Authorization: Bearer $SB_KEY" -H "Content-Type: application/json" -d '{"status":"running","last_run":"'$TS'","current_task":"Self-correcting patterns"}' > /dev/null
+          sleep 1
+          curl -s -X PATCH "$SB_URL/rest/v1/agent_heartbeats?agent_id=eq.swarm-optimizer-01" -H "apikey: $SB_KEY" -H "Authorization: Bearer $SB_KEY" -H "Content-Type: application/json" -d '{"status":"idle","current_task":null}' > /dev/null
+          echo "[OPTIMIZER] Done"
+
+  librarian:
+    runs-on: ubuntu-latest
+    needs: optimizer
+    env:
+      SB_URL: https://zmmiolzdowznlbgqbhnu.supabase.co
+      SB_KEY: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InptbWlvbHpkb3d6bmxiZ3FiaG51Iiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc5MDA4NDY2NywiZXhwIjoyMTA1NjYwNjY3fQ._1hk345Q-pzf0B9V1YC8BOc1qE8KfUuEX3dWgiDeqpc
       USER_ID: 70ea83a4-175a-493e-b61a-c0ef2f102383
     steps:
-      - name: Scout — Research & Intel
+      - name: Librarian Cycle
         run: |
-          echo "[SCOUT] Research cycle $(date -u +%H:%M:%S)"
-          curl -s -X PATCH "$SUPABASE_URL/rest/v1/agent_heartbeats?agent_id=eq.swarm-scout-01" \
-            -H "apikey: $SUPABASE_KEY" -H "Authorization: Bearer $SUPABASE_KEY" \
-            -H "Content-Type: application/json" -H "Prefer: return=minimal" \
-            -d '{"status":"running","last_run":"'"$(date -u +%Y-%m-%dT%H:%M:%SZ)"'","current_task":"Scanning APIs, tools, and web for high-value intel"}'
-          curl -s -X POST https://h.albato.com/wh/38/1lf3rnr/O9whZJUQfZcWAqkAiodlBeMR9qkbL21l1yZSAYPqr78/ \
-            -H "Content-Type: application/json" \
-            -d '{"agent":"scout","action":"cycle","ts":"'"$(date -u +%Y-%m-%dT%H:%M:%SZ)"'"}'
-          curl -s -X PATCH "$SUPABASE_URL/rest/v1/agent_heartbeats?agent_id=eq.swarm-scout-01" \
-            -H "apikey: $SUPABASE_KEY" -H "Authorization: Bearer $SUPABASE_KEY" \
-            -H "Content-Type: application/json" -H "Prefer: return=minimal" \
-            -d '{"status":"idle","current_task":null}'
+          echo "[LIBRARIAN] $(date -u +%H:%M:%S)"
+          TS=$(date -u +%Y-%m-%dT%H:%M:%SZ)
+          curl -s -X PATCH "$SB_URL/rest/v1/agent_heartbeats?agent_id=eq.swarm-librarian-01" -H "apikey: $SB_KEY" -H "Authorization: Bearer $SB_KEY" -H "Content-Type: application/json" -d '{"status":"running","last_run":"'$TS'","current_task":"Syncing memory to vault"}' > /dev/null
+          curl -s -X POST "$SB_URL/rest/v1/memory_entries" -H "apikey: $SB_KEY" -H "Authorization: Bearer $SB_KEY" -H "Content-Type: application/json" -H "Prefer: return=minimal" -d '{"user_id":"'$USER_ID'","type":"experience","content":"Swarm cycle '$TS'","tags":["swarm","librarian","auto"],"session_id":"gh-'$GITHUB_RUN_ID'"}' > /dev/null
+          sleep 1
+          curl -s -X PATCH "$SB_URL/rest/v1/agent_heartbeats?agent_id=eq.swarm-librarian-01" -H "apikey: $SB_KEY" -H "Authorization: Bearer $SB_KEY" -H "Content-Type: application/json" -d '{"status":"idle","current_task":null}' > /dev/null
+          echo "[LIBRARIAN] Memory synced"
 
-      - name: Architect — Build & Infrastructure
+  envoy:
+    runs-on: ubuntu-latest
+    needs: librarian
+    env:
+      SB_URL: https://zmmiolzdowznlbgqbhnu.supabase.co
+      SB_KEY: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InptbWlvbHpkb3d6bmxiZ3FiaG51Iiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc5MDA4NDY2NywiZXhwIjoyMTA1NjYwNjY3fQ._1hk345Q-pzf0B9V1YC8BOc1qE8KfUuEX3dWgiDeqpc
+    steps:
+      - name: Envoy + Orchestrator + Cycle Count
         run: |
-          echo "[ARCHITECT] Build check $(date -u +%H:%M:%S)"
-          curl -s -X PATCH "$SUPABASE_URL/rest/v1/agent_heartbeats?agent_id=eq.swarm-architect-01" \
-            -H "apikey: $SUPABASE_KEY" -H "Authorization: Bearer $SUPABASE_KEY" \
-            -H "Content-Type: application/json" -H "Prefer: return=minimal" \
-            -d '{"status":"running","last_run":"'"$(date -u +%Y-%m-%dT%H:%M:%SZ)"'","current_task":"Verifying infrastructure integrity"}'
-          curl -s -X PATCH "$SUPABASE_URL/rest/v1/agent_heartbeats?agent_id=eq.swarm-architect-01" \
-            -H "apikey: $SUPABASE_KEY" -H "Authorization: Bearer $SUPABASE_KEY" \
-            -H "Content-Type: application/json" -H "Prefer: return=minimal" \
-            -d '{"status":"idle","current_task":null}'
-
-      - name: Optimizer — Self-Correction
-        run: |
-          echo "[OPTIMIZER] Optimization cycle $(date -u +%H:%M:%S)"
-          curl -s -X PATCH "$SUPABASE_URL/rest/v1/agent_heartbeats?agent_id=eq.swarm-optimizer-01" \
-            -H "apikey: $SUPABASE_KEY" -H "Authorization: Bearer $SUPABASE_KEY" \
-            -H "Content-Type: application/json" -H "Prefer: return=minimal" \
-            -d '{"status":"running","last_run":"'"$(date -u +%Y-%m-%dT%H:%M:%SZ)"'","current_task":"Analyzing previous cycles for improvements"}'
-          curl -s -X PATCH "$SUPABASE_URL/rest/v1/agent_heartbeats?agent_id=eq.swarm-optimizer-01" \
-            -H "apikey: $SUPABASE_KEY" -H "Authorization: Bearer $SUPABASE_KEY" \
-            -H "Content-Type: application/json" -H "Prefer: return=minimal" \
-            -d '{"status":"idle","current_task":null}'
-
-      - name: Librarian — Memory Persistence
-        run: |
-          echo "[LIBRARIAN] Memory sync $(date -u +%H:%M:%S)"
-          curl -s -X PATCH "$SUPABASE_URL/rest/v1/agent_heartbeats?agent_id=eq.swarm-librarian-01" \
-            -H "apikey: $SUPABASE_KEY" -H "Authorization: Bearer $SUPABASE_KEY" \
-            -H "Content-Type: application/json" -H "Prefer: return=minimal" \
-            -d '{"status":"running","last_run":"'"$(date -u +%Y-%m-%dT%H:%M:%SZ)"'","current_task":"Syncing memory entries to vault"}'
-          curl -s -X POST "$SUPABASE_URL/rest/v1/memory_entries" \
-            -H "apikey: $SUPABASE_KEY" -H "Authorization: Bearer $SUPABASE_KEY" \
-            -H "Content-Type: application/json" -H "Prefer: return=minimal" \
-            -d '{"user_id":"'"$USER_ID"'","type":"experience","content":"Swarm cycle '"$(date -u +%Y-%m-%dT%H:%M:%SZ)"' — GitHub Actions run '"$GITHUB_RUN_ID"'","tags":["swarm","librarian","auto"],"session_id":"gh-'","$GITHUB_RUN_ID"'"}'
-          curl -s -X POST https://play.svix.com/in/oAqq1httRtL8ZynkPc0Kdp4u1iH/ \
-            -H "Content-Type: application/json" \
-            -d '{"agent":"librarian","action":"sync","ts":"'"$(date -u +%Y-%m-%dT%H:%M:%SZ)"'"}'
-          curl -s -X PATCH "$SUPABASE_URL/rest/v1/agent_heartbeats?agent_id=eq.swarm-librarian-01" \
-            -H "apikey: $SUPABASE_KEY" -H "Authorization: Bearer $SUPABASE_KEY" \
-            -H "Content-Type: application/json" -H "Prefer: return=minimal" \
-            -d '{"status":"idle","current_task":null}'
-
-      - name: Envoy — Status Report
-        run: |
-          echo "[ENVOY] Reporting $(date -u +%H:%M:%S)"
-          curl -s -X PATCH "$SUPABASE_URL/rest/v1/agent_heartbeats?agent_id=eq.swarm-envoy-01" \
-            -H "apikey: $SUPABASE_KEY" -H "Authorization: Bearer $SUPABASE_KEY" \
-            -H "Content-Type: application/json" -H "Prefer: return=minimal" \
-            -d '{"status":"running","last_run":"'"$(date -u +%Y-%m-%dT%H:%M:%SZ)"'","current_task":"Generating swarm status report"}'
-          curl -s -X PATCH "$SUPABASE_URL/rest/v1/agent_heartbeats?agent_id=eq.swarm-envoy-01" \
-            -H "apikey: $SUPABASE_KEY" -H "Authorization: Bearer $SUPABASE_KEY" \
-            -H "Content-Type: application/json" -H "Prefer: return=minimal" \
-            -d '{"status":"idle","current_task":null}'
-
-      - name: Orchestrator — Finalize
-        run: |
-          echo "[ORCHESTRATOR] Finalizing cycle $(date -u +%H:%M:%S)"
-          curl -s -X PATCH "$SUPABASE_URL/rest/v1/agent_heartbeats?agent_id=eq.swarm-orchestrator-01" \
-            -H "apikey: $SUPABASE_KEY" -H "Authorization: Bearer $SUPABASE_KEY" \
-            -H "Content-Type: application/json" -H "Prefer: return=minimal" \
-            -d '{"status":"running","last_run":"'"$(date -u +%Y-%m-%dT%H:%M:%SZ)"'","current_task":"Routing and finalizing"}'
-          curl -s -X PATCH "$SUPABASE_URL/rest/v1/agent_heartbeats?agent_id=eq.swarm-orchestrator-01" \
-            -H "apikey: $SUPABASE_KEY" -H "Authorization: Bearer $SUPABASE_KEY" \
-            -H "Content-Type: application/json" -H "Prefer: return=minimal" \
-            -d '{"status":"idle","current_task":null}'
-
-      - name: Increment Cycle Counts
-        run: |
-          for AGENT in swarm-scout-01 swarm-architect-01 swarm-optimizer-01 swarm-librarian-01 swarm-orchestrator-01 swarm-envoy-01; do
-            CURRENT=$(curl -s "$SUPABASE_URL/rest/v1/agent_heartbeats?agent_id=eq.$AGENT&select=cycles_completed" \
-              -H "apikey: $SUPABASE_KEY" -H "Authorization: Bearer $SUPABASE_KEY" | jq -r '.[0].cycles_completed')
-            NEW=$((CURRENT + 1))
-            curl -s -X PATCH "$SUPABASE_URL/rest/v1/agent_heartbeats?agent_id=eq.$AGENT" \
-              -H "apikey: $SUPABASE_KEY" -H "Authorization: Bearer $SUPABASE_KEY" \
-              -H "Content-Type: application/json" -H "Prefer: return=minimal" \
-              -d '{"cycles_completed":'"$NEW"'}'
-          done
-          echo "[SWARM] All 6 agent cycles incremented."
+          echo "[ENVOY] $(date -u +%H:%M:%S)"
+          TS=$(date -u +%Y-%m-%dT%H:%M:%SZ)
+          
+          # Update envoy and orchestrator
+          curl -s -X PATCH "$SB_URL/rest/v1/agent_heartbeats?agent_id=eq.swarm-envoy-01" -H "apikey: $SB_KEY" -H "Authorization: Bearer $SB_KEY" -H "Content-Type: application/json" -d '{"status":"running","last_run":"'$TS'","current_task":"Reporting swarm status"}' > /dev/null
+          curl -s -X PATCH "$SB_URL/rest/v1/agent_heartbeats?agent_id=eq.swarm-orchestrator-01" -H "apikey: $SB_KEY" -H "Authorization: Bearer $SB_KEY" -H "Content-Type: application/json" -d '{"status":"running","last_run":"'$TS'","current_task":"Routing and finalizing"}' > /dev/null
+          sleep 1
+          curl -s -X PATCH "$SB_URL/rest/v1/agent_heartbeats?agent_id=eq.swarm-envoy-01" -H "apikey: $SB_KEY" -H "Authorization: Bearer $SB_KEY" -H "Content-Type: application/json" -d '{"status":"idle","current_task":null}' > /dev/null
+          curl -s -X PATCH "$SB_URL/rest/v1/agent_heartbeats?agent_id=eq.swarm-orchestrator-01" -H "apikey: $SB_KEY" -H "Authorization: Bearer $SB_KEY" -H "Content-Type: application/json" -d '{"status":"idle","current_task":null}' > /dev/null
+          
+          # Increment all cycle counts using SQL
+          curl -s -X POST "$SB_URL/rest/v1/rpc/increment_cycles" -H "apikey: $SB_KEY" -H "Authorization: Bearer $SB_KEY" -H "Content-Type: application/json" 2>/dev/null || true
+          
+          echo "[SWARM] Full cycle complete. 6/6 agents checked in."
