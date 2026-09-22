@@ -1,8 +1,5 @@
-# OMNI-BRAIN TASK DISPATCHER
-# Handles specific user commands sent via webhook or manual trigger.
-# Use: curl -X POST https://api.github.com/repos/king5553250/agentic-hub/dispatches
-#   -H "Authorization: Bearer $GITHUB_TOKEN"
-#   -d '{"event_type":"omni-brain-task","client_payload":{"task":"fetch_emails","params":{}}}'
+# OMNI-BRAIN TASK DISPATCHER v2
+# Routes commands to any connected app via Albato bridge + Supabase logging
 
 name: Task Dispatcher
 
@@ -12,10 +9,12 @@ on:
   workflow_dispatch:
     inputs:
       app:
-        description: 'Target app (gmail, github, calendar, discord, canvas, youtube)'
+        description: 'Target app'
         required: true
+        type: choice
+        options: ['gmail','github','calendar','discord','canvas','youtube','slack','notion','browser','all']
       action:
-        description: 'Action to perform'
+        description: 'Action'
         required: true
       params:
         description: 'JSON params'
@@ -25,34 +24,39 @@ jobs:
   execute:
     runs-on: ubuntu-latest
     timeout-minutes: 10
+    env:
+      SUPABASE_URL: https://zmmiolzdowznlbgqbhnu.supabase.co
+      SUPABASE_ANON_KEY: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InptbWlvbHpkb3d6bmxiZ3FiaG51Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTAwODQ2NjcsImV4cCI6MjEwNTY2MDY2N30.N0en-13Hg1LMtxVdum0f0LE5doFtHRtS0B83pgf3Tuk
     steps:
       - name: Parse Task
         id: parse
         run: |
           if [ "${{ github.event_name }}" = "repository_dispatch" ]; then
-            echo "TASK=${{ github.event.client_payload.task }}" >> $GITHUB_OUTPUT
             echo "APP=${{ github.event.client_payload.app }}" >> $GITHUB_OUTPUT
             echo "ACTION=${{ github.event.client_payload.action }}" >> $GITHUB_OUTPUT
           else
-            echo "TASK=manual" >> $GITHUB_OUTPUT
             echo "APP=${{ inputs.app }}" >> $GITHUB_OUTPUT
             echo "ACTION=${{ inputs.action }}" >> $GITHUB_OUTPUT
           fi
 
+      - name: Log Task to Supabase
+        run: |
+          curl -s -X POST "$SUPABASE_URL/rest/v1/task_plans" \
+            -H "apikey: $SUPABASE_ANON_KEY" \
+            -H "Authorization: Bearer $SUPABASE_ANON_KEY" \
+            -H "Content-Type: application/json" \
+            -H "Prefer: return=minimal" \
+            -d "{\"user_id\":\"70ea83a4-175a-493e-b61a-c0ef2f102383\",\"intent\":\"${{ steps.parse.outputs.APP }}.${{ steps.parse.outputs.ACTION }}\",\"steps\":[{\"app\":\"${{ steps.parse.outputs.APP }}\",\"action\":\"${{ steps.parse.outputs.ACTION }}\"}],\"status\":\"executing\"}"
+
       - name: Route to Albato Bridge
         run: |
-          echo "[TASK ROUTER] Routing ${{ steps.parse.outputs.APP }}.${{ steps.parse.outputs.ACTION }}"
+          echo "[ROUTER] Dispatching ${{ steps.parse.outputs.APP }}.${{ steps.parse.outputs.ACTION }}"
           curl -s -X POST https://h.albato.com/wh/38/1lf3rnr/O9whZJUQfZcWAqkAiodlBeMR9qkbL21l1yZSAYPqr78/ \
             -H "Content-Type: application/json" \
-            -d '{
-              "source": "github-actions",
-              "app": "${{ steps.parse.outputs.APP }}",
-              "action": "${{ steps.parse.outputs.ACTION }}",
-              "params": ${{ inputs.params || '{}' }},
-              "timestamp": "'$(date -u +%Y-%m-%dT%H:%M:%SZ)'"
-            }' || true
+            -d "{\"source\":\"github-actions\",\"app\":\"${{ steps.parse.outputs.APP }}\",\"action\":\"${{ steps.parse.outputs.ACTION }}\",\"params\":${{ inputs.params || '{}' }},\"timestamp\":\"$(date -u +%Y-%m-%dT%H:%M:%SZ)\"}"
 
-      - name: Notify Discord
-        if: always()
+      - name: Notify Svix
         run: |
-          echo "[ENVOY] Task ${{ steps.parse.outputs.APP }}.${{ steps.parse.outputs.ACTION }} completed."
+          curl -s -X POST https://play.svix.com/in/oAqq1httRtL8ZynkPc0Kdp4u1iH/ \
+            -H "Content-Type: application/json" \
+            -d "{\"agent\":\"orchestrator\",\"action\":\"task_dispatch\",\"app\":\"${{ steps.parse.outputs.APP }}\",\"task_action\":\"${{ steps.parse.outputs.ACTION }}\"}"

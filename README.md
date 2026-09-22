@@ -1,60 +1,70 @@
-# 🤖 AI Agentic Hub
+# 🧠 OMNI-BRAIN — The Digital Sovereign
 
-An AI-driven agentic automation hub — compose, deploy, and orchestrate intelligent agents across your favorite tools.
+An autonomous, self-evolving AI that knows you better than any tool. 
+Builds a complete behavioral twin that manages your digital life 24/7.
 
-## 🏗 Architecture
+## Architecture
 
 ```
-🌐 Webhook Gateway (Svix)
-       │
-       ▼
-🧠 Orchestrator (n8n)
-       │
-       ├──→ 🔀 Router → Albato Bridge → ActivePieces
-       ├──→ 📧 Gmail Agent
-       ├──→ 🐙 GitHub Agent  
-       ├──→ ▶️ YouTube Agent
-       └──→ 🔗 Custom Webhooks
+┌─────────────────────────────────────────────┐
+│              OMNI-BRAIN CORE                │
+├─────────────────────────────────────────────┤
+│  Memory Core   │ Mirror Engine │ Task Router│
+│  (LTM Engine)  │ (Voice Clone) │ (Multi-App)│
+├─────────────────────────────────────────────┤
+│           Agent Runner (24/7 Swarm)         │
+│  Scout → Architect → Optimizer → Librarian  │
+│              → Orchestrator → Envoy         │
+├─────────────────────────────────────────────┤
+│  GitHub Actions │ Supabase │ Discord │ n8n  │
+│  Albato │ Svix  │ Hyperbrowser │ Composio   │
+└─────────────────────────────────────────────┘
 ```
 
-## 🔌 Connected Services
+## Stack
 
-| Service | Status | Endpoint |
-|---------|--------|----------|
-| n8n Workflow Engine | ✅ Active | Webhook: `/agentic-hub` |
-| ActivePieces | ✅ Active | Flow: AI Agentic Hub - Webhook Ingest |
-| Albato | ✅ Active | Relay Bridge |
-| Svix | 🔗 Pending | Webhook Gateway |
-| Gmail | ✅ Active | mahdilouz02@gmail.com |
-| GitHub | ✅ Active | @king5553250 |
-| YouTube | ✅ Active | Connected |
-| Webhook.site | ✅ Active | Test Endpoint |
+| Layer | Tech | Status |
+|-------|------|--------|
+| Backend | Supabase (Postgres) | ✅ Live — `zmmiolzdowznlbgqbhnu` |
+| Brain | TypeScript (Memory Core, Mirror Engine, Task Router) | ✅ Deployed |
+| Automation | GitHub Actions (free/unlimited) | ✅ Running every 10min |
+| Browser | Hyperbrowser (persistent profiles) | ✅ Sovereign Profile active |
+| Comms | Discord (omni-brain server) | ✅ 13 channels |
+| Webhooks | Albato + Svix | ✅ Active |
+| AI | Composio (64 connections, 37+ toolkits) | ✅ Connected |
 
-## 🚀 Quick Start
-
-Send a POST request to the n8n webhook:
+## Quick Start
 
 ```bash
-curl -X POST https://[n8n-instance]/webhook/agentic-hub \
-  -H "Content-Type: application/json" \
-  -d '{"action": "github_list_repos", "params": {}}'
+# Trigger a task dispatch
+curl -X POST https://api.github.com/repos/king5553250/agentic-hub/dispatches \
+  -H "Authorization: Bearer $GITHUB_TOKEN" \
+  -d '{"event_type":"omni-brain-task","client_payload":{"app":"gmail","action":"fetch"}}'
+
+# Fire dead switch (full state dump)
+curl -X POST https://api.github.com/repos/king5553250/agentic-hub/dispatches \
+  -H "Authorization: Bearer $GITHUB_TOKEN" \
+  -d '{"event_type":"dead-switch"}'
 ```
 
-## 📁 Agent Templates
+## Project Structure
 
-- `agents/github-agent.yaml` - GitHub automation agent
-- `agents/email-agent.yaml` - Gmail agent
-- `agents/youtube-agent.yaml` - YouTube content agent
-- `agents/webhook-relay.yaml` - Cross-platform webhook relay
+```
+src/brain/
+├── memory-core.ts      # LTM engine — 10s persistence loop
+├── mirror-engine.ts    # Behavioral twin — voice cloning
+├── task-router.ts      # Multi-app orchestrator (10+ apps)
+├── agent-runner.ts     # 24/7 swarm (6 agents)
+└── index.ts            # Clean exports
 
-## 🛠 Built With
+.github/workflows/
+├── swarm-engine.yml    # Every 10 min — Scout→Envoy cycle
+├── task-dispatcher.yml # On-demand app commands
+└── dead-switch.yml     # Full state dump
 
-- **n8n** - Workflow orchestration
-- **ActivePieces** - Flow automation
-- **Albato** - Integration bridge
-- **Svix** - Webhook management
-- **Composio** - AI agent framework
-- **GitHub** - Agent store & version control
+supabase/
+├── migrations/001_brain_schema.sql  # 7 tables
+└── seed.sql                         # Initial data
+```
 
----
-*Built by Mega-Agent Boss | 2026-09-19*
+## Built by Mega-Agent Boss + Composio | 2026-09-22

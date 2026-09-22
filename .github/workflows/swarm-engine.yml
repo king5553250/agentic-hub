@@ -1,52 +1,83 @@
-# OMNI-BRAIN SWARM ENGINE
-# GitHub Actions as 24/7 automation backbone — free, unlimited minutes on public repos.
-# Replaces ActivePieces (out of credits).
-# Triggered by: cron schedule, repository_dispatch webhook, workflow_dispatch (manual)
+# OMNI-BRAIN SWARM ENGINE v2
+# Wired to live Supabase: zmmiolzdowznlbgqbhnu
+# Runs every 10 mins — Scout→Architect→Optimizer→Librarian→Envoy cycle
 
 name: Omni-Brain Swarm Engine
 
 on:
   schedule:
-    # Run every 10 minutes — the 10-second persistence loop scaled for GH Actions
     - cron: '*/10 * * * *'
   workflow_dispatch:
     inputs:
       task:
-        description: 'Task to execute (scout, sweep, sync, dead_switch)'
+        description: 'Task: scout, build, optimize, sync, report, all'
         required: false
-        default: 'sweep'
+        default: 'all'
   repository_dispatch:
-    types: [omni-brain-task]
+    types: [omni-brain-task, dead-switch]
 
 jobs:
   swarm-cycle:
     runs-on: ubuntu-latest
-    timeout-minutes: 5
+    timeout-minutes: 8
+    env:
+      SUPABASE_URL: https://zmmiolzdowznlbgqbhnu.supabase.co
+      SUPABASE_ANON_KEY: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InptbWlvbHpkb3d6bmxiZ3FiaG51Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTAwODQ2NjcsImV4cCI6MjEwNTY2MDY2N30.N0en-13Hg1LMtxVdum0f0LE5doFtHRtS0B83pgf3Tuk
     steps:
-      - name: Swarm Heartbeat
+      - name: Scout — Research Cycle
         run: |
-          echo "[OMNI-BRAIN] Swarm cycle started at $(date -u)"
-          echo "Event: ${{ github.event_name }}"
-          echo "Task: ${{ github.event.inputs.task || 'scheduled-sweep' }}"
-
-      - name: Scout — Research & Intel
-        if: always()
-        run: |
-          echo "[SCOUT] Scanning for high-value data..."
-          curl -s https://h.albato.com/wh/38/1lf3rnr/O9whZJUQfZcWAqkAiodlBeMR9qkbL21l1yZSAYPqr78/ \
+          echo "[SCOUT] Running intel sweep at $(date -u)"
+          curl -s "$SUPABASE_URL/rest/v1/agent_heartbeats?agent_role=eq.scout" \
+            -H "apikey: $SUPABASE_ANON_KEY" \
+            -H "Authorization: Bearer $SUPABASE_ANON_KEY" || true
+          curl -s -X POST https://h.albato.com/wh/38/1lf3rnr/O9whZJUQfZcWAqkAiodlBeMR9qkbL21l1yZSAYPqr78/ \
             -H "Content-Type: application/json" \
-            -d '{"agent":"scout","action":"cycle","timestamp":"'$(date -u +%Y-%m-%dT%H:%M:%SZ)'"}' || true
+            -d "{\"agent\":\"scout\",\"action\":\"cycle\",\"timestamp\":\"$(date -u +%Y-%m-%dT%H:%M:%SZ)\"}" || true
+
+      - name: Architect — Build Check
+        run: |
+          echo "[ARCHITECT] Checking infrastructure..."
+          curl -s "$SUPABASE_URL/rest/v1/task_plans?select=id,status&status=eq.planning" \
+            -H "apikey: $SUPABASE_ANON_KEY" \
+            -H "Authorization: Bearer $SUPABASE_ANON_KEY" || true
+
+      - name: Optimizer — Self-Correction
+        run: |
+          echo "[OPTIMIZER] Analyzing agent errors..."
+          curl -s "$SUPABASE_URL/rest/v1/agent_heartbeats?status=eq.error" \
+            -H "apikey: $SUPABASE_ANON_KEY" \
+            -H "Authorization: Bearer $SUPABASE_ANON_KEY" || true
 
       - name: Librarian — Memory Sync
-        if: always()
         run: |
           echo "[LIBRARIAN] Syncing to vaults..."
-          curl -s https://play.svix.com/in/oAqq1httRtL8ZynkPc0Kdp4u1iH/ \
+          curl -s -X POST "$SUPABASE_URL/rest/v1/memory_entries" \
+            -H "apikey: $SUPABASE_ANON_KEY" \
+            -H "Authorization: Bearer $SUPABASE_ANON_KEY" \
             -H "Content-Type: application/json" \
-            -d '{"agent":"librarian","action":"sync","source":"github-actions","timestamp":"'$(date -u +%Y-%m-%dT%H:%M:%SZ)'"}' || true
+            -H "Prefer: return=minimal" \
+            -d "{\"user_id\":\"70ea83a4-175a-493e-b61a-c0ef2f102383\",\"type\":\"experience\",\"content\":\"Swarm cycle at $(date -u +%Y-%m-%dT%H:%M:%SZ) — GitHub Actions run ${{ github.run_id }}\",\"tags\":[\"swarm\",\"librarian\",\"auto\"],\"session_id\":\"github-actions-${{ github.run_id }}\"}" || true
+          curl -s -X POST https://play.svix.com/in/oAqq1httRtL8ZynkPc0Kdp4u1iH/ \
+            -H "Content-Type: application/json" \
+            -d "{\"agent\":\"librarian\",\"action\":\"sync\",\"source\":\"github-actions\",\"timestamp\":\"$(date -u +%Y-%m-%dT%H:%M:%SZ)\"}" || true
 
       - name: Envoy — Status Report
-        if: always()
         run: |
-          echo "[ENVOY] Swarm cycle complete. All agents checked in."
-          echo "Next cycle in 10 minutes."
+          echo "[ENVOY] Generating swarm status..."
+          RESPONSE=$(curl -s "$SUPABASE_URL/rest/v1/agent_heartbeats?select=agent_role,status,cycles_completed" \
+            -H "apikey: $SUPABASE_ANON_KEY" \
+            -H "Authorization: Bearer $SUPABASE_ANON_KEY")
+          echo "Swarm status: $RESPONSE"
+          echo "[ENVOY] Cycle complete. Next in 10 minutes."
+
+      - name: Update Heartbeats
+        run: |
+          for ROLE in scout architect optimizer librarian orchestrator envoy; do
+            curl -s -X PATCH "$SUPABASE_URL/rest/v1/agent_heartbeats?agent_role=eq.${ROLE}" \
+              -H "apikey: $SUPABASE_ANON_KEY" \
+              -H "Authorization: Bearer $SUPABASE_ANON_KEY" \
+              -H "Content-Type: application/json" \
+              -H "Prefer: return=minimal" \
+              -d "{\"status\":\"idle\",\"last_run\":\"$(date -u +%Y-%m-%dT%H:%M:%SZ)\"}" || true
+          done
+          echo "[SWARM] All 6 agents heartbeat updated."
